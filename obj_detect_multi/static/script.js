@@ -27,7 +27,7 @@ function ChangePhoto(name, img) {
     img = typeof img !== 'undefined' ? img : "{{ result['original'] }}";
     target = document.getElementById("label");
     target.innerHTML = name;
-    target = document.getElementById("photo");
+    target = document.querySelector("#resultImg>img");
     target.src = img;
 }
 
@@ -35,7 +35,7 @@ function WaitDisplay(upName) {
     target = document.getElementById("result");
     target.style.display = "none";
     target = document.getElementById("loading");
-    target.style.display = "";
+    // target.style.display = "";
     setTimeout(function() {
         document.getElementById(upName).submit();
     }, 100);
