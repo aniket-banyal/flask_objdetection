@@ -3,7 +3,7 @@
     <div class="tab-body">
         <form id="vidupload" method=post action={{ url_for( 'vidproc') }} enctype="multipart/form-data">
             <div class="drop">
-                <img class='uploadIcon' src="/static/drop1.svg" />
+                <img class='uploadIcon' src="/static/images/drop1.svg" />
                 <h1>Choose file or Drop here</h1>
                 {{ video_form.input_video | safe }} {% if video_form.input_video.errors %}
                 <ul class=errors>
@@ -29,7 +29,7 @@
     {%if video%}
     <div id="videoResult">
         <hr>
-        <h2>Detections</h2>
+        <h2 class='heading'>Detections</h2>
         <div class="result-content">
             <div id="detectedVideo">
                 <img src="{{  url_for('vidpros') }}">

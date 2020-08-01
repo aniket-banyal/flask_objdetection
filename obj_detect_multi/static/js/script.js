@@ -34,10 +34,17 @@ function openTab(e) {
 
 function ChangePhoto(e, name, img) {
     img = typeof img !== 'undefined' ? img : "{{ result['original'] }}";
-    const index = e.target.dataset.index;
+    const element = e.target;
+    const index = element.dataset.index;
 
     document.querySelectorAll(".label")[index].innerHTML = name;
     document.querySelectorAll(".detectedImg>img")[index].src = img;
+
+    document.querySelectorAll('.classes a').forEach(a => {
+        a.style.color = 'blue';
+    });
+    element.style.color = '#ff7846';
+
 }
 
 function Submit(upName) {

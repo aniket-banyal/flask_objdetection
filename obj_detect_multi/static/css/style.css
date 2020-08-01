@@ -117,13 +117,15 @@ header>h1 {
 }
 
 .tab-content>h2,
-.label,
-#videoResult h2 {
-    font-size: 2rem;
+#videoResult .heading {
+    font-size: 1.5rem;
     padding: 1em;
-    text-align: center;
     color: #222831;
     font-weight: 400;
+}
+
+.tab-content>h2 {
+    text-align: center;
 }
 
 .tab-body {
@@ -170,7 +172,8 @@ form .drop h1 {
     font-weight: 400;
 }
 
-.tab-body form input {
+form #input_photo,
+#input_video {
     width: 100%;
     height: 100%;
     cursor: pointer;
@@ -264,9 +267,38 @@ form .list .thumbnail {
     margin-bottom: 30px;
 }
 
+#imgResult .heading {
+    font-size: 2rem;
+    padding: 0.5em;
+    color: #222831;
+    text-align: center;
+    font-weight: 700;
+}
+
+#imgResult .model {
+    margin-bottom: 2em;
+    padding: 1em 2em;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-shadow: 0 0 10px 2px #ccc;
+}
+
+.label {
+    font-size: 1.2rem;
+    padding: 1em;
+    color: #222831;
+    font-weight: 400;
+}
+
 .label,
 #videoResult h2 {
     text-align: left;
+}
+
+#imgResult .modelName {
+    font-size: 1.3rem;
+    font-weight: 400;
+    text-align: center;
 }
 
 #imgResult div.result-content,
@@ -292,7 +324,6 @@ form .list .thumbnail {
 
 div.result-content div.classes {
     width: 20%;
-    /* height: 100%; */
     display: flex;
     flex-direction: column;
     justify-content: space-between;

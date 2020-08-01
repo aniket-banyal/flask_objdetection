@@ -45,9 +45,10 @@ PATH_TO_CKPT = BASE_CKPT +  'ssd_mobilenet_v1_coco_2018_01_28/frozen_inference_g
 PATH_TO_LABELS = MODEL_BASE + '/object_detection/data/mscoco_label_map.pbtxt'
 MODELS = {
     'Mobilenet': 'ssd_mobilenet_v1_coco_2018_01_28',
-    'Inception': 'ssd_inception_v2_coco_2018_01_28',
-    'Resnet101': 'rfcn_resnet101_coco_2018_01_28',
-    'FasterRCNN_ResNet101': 'faster_rcnn_resnet101_coco_2018_01_28'
+    # 'Mobilenet2': 'ssd_mobilenet_v1_coco_2018_01_28',
+    # 'Inception': 'ssd_inception_v2_coco_2018_01_28',
+    # 'Resnet101': 'rfcn_resnet101_coco_2018_01_28',
+    # 'FasterRCNN_ResNet101': 'faster_rcnn_resnet101_coco_2018_01_28'
 }
 
 content_types = {'jpg': 'image/jpeg',
@@ -283,11 +284,12 @@ def detect_objects(model, image_path):
                                thickness=int(scores[i]*10)-4)
 
   result = {}
-  result['original'] = encode_image(image.copy())
+  result['detections'] = {}
+  result['detections']['original'] = encode_image(image.copy())
 
   for cls, new_image in new_images.items():
     category = model.category_index[cls]['name']
-    result[category] = encode_image(new_image)
+    result['detections'][category] = encode_image(new_image)
 
   return result
 
@@ -296,13 +298,7 @@ def detect_objects(model, image_path):
 def main_display():
     photo_form = PhotoForm(request.form)
     video_form = VideoForm(request.form)
-    return render_template('main.html', photo_form=photo_form, video_form=video_form, models=MODELS.keys(), result={})
-
-models = []
-for model_path in MODELS.values():
-    print('loading model')
-    PATH_TO_CKPT = BASE_CKPT + model_path + '/frozen_inference_graph.pb'
-    models.append(ObjectDetector(PATH_TO_CKPT))
+    return render_template('main.html', photo_form=photo_form, video_form=video_form, models=list(MODELS.keys()), result={})
 
 
 @app.route('/imgproc', methods=['GET', 'POST'])
@@ -313,27 +309,31 @@ def imgproc():
         with tempfile.NamedTemporaryFile(delete=False) as temp:
             form.input_photo.data.save(temp)
             temp.flush()
-            results = []
-            for model in models:
-                print('detecting..')
-                results.append(detect_objects(model, temp.name))
-            for result in results:
-                print(result.keys())
-
+            results = {}
+            print('detecting')
+            start_time = time.time();
+            for model_name, model_path in MODELS.items():
+                model_start_time = time.time()
+                PATH_TO_CKPT = BASE_CKPT + model_path + '/frozen_inference_graph.pb'
+                model = ObjectDetector(PATH_TO_CKPT)
+                results[model_name] = detect_objects(model, temp.name)
+                results[model_name]['time'] = round(time.time() - model_start_time, 2)
+            total_time = round(time.time() - start_time, 2)
+            print('detected')
+            
         photo_form = PhotoForm(request.form)
-        return render_template('main.html', photo_form=photo_form, video_form=video_form, models=MODELS.keys(), results=results)
+        return render_template('main.html', photo_form=photo_form, video_form=video_form, models=list(MODELS.keys()), results=results, total_time=total_time)
     else:
         return redirect(url_for('main_display'))
 
 
 @app.route('/vidproc', methods=['GET', 'POST'])
 def vidproc():
+    global PATH_TO_CKPT
     print('vidproc')
-    global model
     form = VideoForm(CombinedMultiDict((request.files, request.form)))
     if request.method == 'POST':
         PATH_TO_CKPT = BASE_CKPT +  MODELS[request.form['model']] + '/frozen_inference_graph.pb'
-        model = ObjectDetector(PATH_TO_CKPT)
         with tempfile.NamedTemporaryFile(delete=False) as temp:
             form.input_video.data.save(temp)
             temp.flush()
@@ -341,7 +341,7 @@ def vidproc():
         video_form = VideoForm(request.form)
         photo_form = PhotoForm(request.form)
 
-        return render_template('video.html', photo_form=photo_form, video_form=video_form, models=MODELS.keys(), video=True)
+        return render_template('video.html', photo_form=photo_form, video_form=video_form, models=list(MODELS.keys()), video=True)
 
 
 
@@ -353,6 +353,7 @@ def temp():
 
 @app.route('/vidpros')
 def vidpros():
+    model = ObjectDetector(PATH_TO_CKPT)
     global foundClasses
     foundClasses = []
     graph = model.detection_graph
@@ -541,10 +542,6 @@ def realpros():
 
     return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-import time
-start_time = time.time()
-model = ObjectDetector(PATH_TO_CKPT)
-print('model took', time.time() - start_time)
 video_init = WebcamVideoStream(src=0, width=480, height=360)
 fps_init = FPS()
 
